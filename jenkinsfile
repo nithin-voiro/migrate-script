@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'legacy_build_command.sh'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'legacy_test_command.sh'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'legacy_deploy_command.sh'
+            }
+        }
+    }
+}
