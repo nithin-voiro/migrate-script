@@ -1,20 +1,54 @@
 pipeline {
     agent any
+
+    // Parameters for dynamic pipeline execution
+    parameters {
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Deployment Environment')
+        string(name: 'APP_NAME', defaultValue: 'myApp', description: 'Application Name')
+    }
+
     stages {
         stage('Build') {
             steps {
-                sh 'legacy_build_command.sh'
+                script {
+                    runShellCommand('./build.sh', 'Build')
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'legacy_test_command.sh'
+                script {
+                    runShellCommand('./test.sh', 'Test')
+                }
             }
         }
         stage('Deploy') {
             steps {
-                sh 'legacy_deploy_command.sh'
+                script {
+                    deployApplication(params.ENV, params.APP_NAME)
+                }
             }
         }
     }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
+        }
+    }
+}
+
+// Reusable function to run shell commands
+def runShellCommand(String command, String stageName) {
+    echo "Executing ${stageName} stage..."
+    sh command
+}
+
+// Reusable function for deployment logic
+def deployApplication(String env, String appName) {
+    echo "Deploying ${appName} to the ${env} environment..."
+    sh "./deploy.sh --env=${env} --app=${appName}"
 }
